@@ -1,3 +1,4 @@
+<!--登录页-->
 <template>
   <div class="login-container">
     <div class="login-box">
@@ -5,19 +6,29 @@
         src="http://ihrm.itheima.net/static/img/login-logo.758b34e9.png"
         alt=""
       />
-      <el-form>
-        <el-form-item>
-          <el-input>
+      <el-form :model="ruleForm" :rules="rules" ref="loginForm">
+        <el-form-item prop="username">
+          <el-input v-model="ruleForm.username">
             <template #prefix>
               <SvgIcon name="user"></SvgIcon>
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="password">
           <el-input
             :type="isPassword ? 'password' : ''"
-            ><!--密码眼睛没打开，类型就加密，否则相反-->
-            <template #prefix>
+            v-model="ruleForm.password"
+            >
+            <!-- <template #prefix>
+              <SvgIcon name="password"></SvgIcon>
+            </template>
+            <template #suffix>
+              <SvgIcon
+                :name="isPassword ? 'eye' : 'eye-open'"
+                @click.native="isPassword = !isPassword"
+              ></SvgIcon>
+            </template> -->
+             <template #prefix>
               <SvgIcon name="password"></SvgIcon>
             </template>
             <template #suffix>
@@ -26,11 +37,11 @@
                 :name="isPassword ? 'eye' : 'eye-open'"
                 @click.native="isPassword = !isPassword"
               ></SvgIcon>
-            </template>
+              </template>
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">登录</el-button>
+          <el-button type="primary" @click="loginFn">登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -38,40 +49,59 @@
 </template>
 
 <script>
-// import { validateMobile } from '@/utils/validate' // 导入校验手机号规则
+import SvgIcon from '@/components/SvgIcon'
+import { login } from '@/api/user'
+// import { validateMobile } from '@/utils/validate'
 export default {
   created () { },
   data () {
-    // const validateMobileFn = (rule, value, callback) => { // element函数校验规则
-    //   if (validateMobile(value)) { // 如果校验手机号有值value
-    //     callback() // 那就执行校验函数
+    // 正则手机号格式
+    // const validateMobile = (mobile) => {
+    //   const reg = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/
+    //   return reg.test(mobile)
+    // }
+    // 函数校验手机格式
+    // const validateMobileFn = (rule, value, callback) => {
+    //   if (validateMobile(value)) {
+    //     callback()
     //   } else {
-    //     callback(new Error('手机号格式不正确')) // 否则校验失败提示用户
+    //     callback(new Error('手机号格式不正确'))
     //   }
     // }
     return {
-      // loginForm: {
-      //   mobile: '13800000002',
-      //   password: '123456'
-      // },
-      // rules: { // element里的rule校验规则，不安全，须加上函数校验规则
-      //   mobile: [
-      //     { required: true, message: '请输入手机号码', trigger: 'blur' }, // blur失去焦点开始校验
-      //     { validator: validateMobileFn, trigger: 'blur' } // 调用函数，二次校验
-      //   ],
-      //   password: [
-      //     { required: true, message: '请输入密码', trigger: 'blur' },
-      //     { min: 6, max: 16, message: '密码长度在6-16之间', trigger: 'blur' }
-      //   ]
-      // },
-      isPassword: true
+      isPassword: true,
+      ruleForm: {
+        username: 'admin',
+        password: '123456'
+      },
+      rules: {
+        username: [
+          { required: true, message: '用户名不能为空', trigger: 'blur' }
+          // { validator: validateMobileFn, trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '密码不能为空', trigger: 'blur' },
+          { min: 6, max: 16, message: '密码必须为6-16位字符', trigger: 'blur' }
+        ]
+      }
     }
   },
-  methods: {},
+  methods: {
+    async loginFn () {
+      try {
+        await this.$refs.loginForm.validate()
+        // this.$message.success('校验成功')
+        await this.$store.dispatch('user/login', this.ruleForm)
+        this.$router.push('/home')
+      } catch (error) {
+        this.$message.error(error.message)
+      }
+    }
+  },
   computed: {},
   watch: {},
   filters: {},
-  components: {}
+  components: { SvgIcon }
 }
 </script>
 
